@@ -58,7 +58,21 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 ```
 Your answer...
 ```
+I recommend Type 1 for the customer table. Type 1 map keeps one row per customer, and the Type 2 map keeps every past version of a customer as its own row.
 
+Type 1 means that when a customer's details change, we overwrite the old value with the new one, and each customer is one row in the table. Type 2 means we keep every old version instead: each change adds a new row, with dates showing when each version was true. You can see this in my Type 2 map, where the customer table carries a valid-from date, a valid-to date, and an extra ID number whose only job is to tell the versions of one customer apart.
+
+My reasons for Type 1 are these.
+
+First, it keeps the customer table clean. One customer is one row. In the Type 2 map, the customer table has to carry two dates and a second ID just to manage its own copies. In the Type 1 map, it holds nothing but the customer's actual details.
+
+Second, it is better for privacy. We store only the customer's current address and never build a deliberate record of everywhere they have lived. Past shipping addresses do remain on old orders, so if we ever need to erase someone's information we would clear those as well, but we keep nothing beyond what each order required.
+
+Third, we lose nothing the business needs. One decision I made in both maps: the order table records its own shipping address, separate from the address on the customer's file. When an order is placed, the system fills this in from the customer's file, but it can also be entered manually, for example when the order is a gift going to someone else's address. Because every order permanently keeps the address it actually shipped to, we can always answer where a package went, and we get that without keeping old versions of the customer.
+
+Fourth, it is simpler to build and search. With Type 1, the customer ID identifies each customer on its own, and everything that points at a customer, like orders and sales in my maps, always points at exactly one row. With Type 2, the same ID appears on several rows, so we would have to invent an extra number to tell the versions apart, and every search would have to pick out the correct version of each customer.
+
+The one thing Type 1 cannot do is show a customer's moving history for periods when no order was placed. We have no requirement to track that.
 ***
 
 ## Section 2:
